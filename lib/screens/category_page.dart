@@ -24,10 +24,9 @@ class _CategoryPageState extends State<CategoryPage> {
 
   void getCategories(String lang) async {
     Map<String, String> header = {
-      "autorization": "f8cff3abac1ff246f75b09e39256ccf8"
+      "autorization": "a69fa0e1dd3d5c2c77cb4d3f0adde901"
     };
-    final categoryResponse = await ChuckerHttpClient(http.Client()).get(
-        headers: header, Uri.parse("${AllCons.BASE_URL}category?lang=$lang"));
+    final categoryResponse = await ChuckerHttpClient(http.Client()).get(headers: header, Uri.parse("${AllCons.BASE_URL}category?lang=$lang"));
     final Map<String, dynamic> body = jsonDecode(categoryResponse.body);
     final CategoryResponse category = CategoryResponse.fromJson(body);
     setState(() {

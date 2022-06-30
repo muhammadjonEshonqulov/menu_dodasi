@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:menu_dodasi/screens/category_page.dart';
+import 'package:menu_dodasi/screens/category_page2.dart';
+import 'package:menu_dodasi/screens/category_page2.dart';
 
 import '../cons/colors/ColorConstants.dart';
 
@@ -100,7 +102,7 @@ class _LoginPageState extends State<LoginPage> {
                             context,
                             MaterialPageRoute(
                                 settings: RouteSettings(arguments: "2"),
-                                builder: (context) => const CategoryPage()));
+                                builder: (context) => const CategoryPage2()));
                       },
                       child: Container(
                         width: 200,
@@ -132,7 +134,7 @@ class _LoginPageState extends State<LoginPage> {
                             context,
                             MaterialPageRoute(
                                 settings: RouteSettings(arguments: "3"),
-                                builder: (context) => const CategoryPage()));
+                                builder: (context) => const CategoryPage2()));
                       },
                       child: Container(
                         width: 200,

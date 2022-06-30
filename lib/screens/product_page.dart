@@ -13,20 +13,24 @@ import 'package:http/http.dart' as http;
 import '../models/product_model.dart';
 
 class ProductPage extends StatefulWidget {
-  const ProductPage({Key? key}) : super(key: key);
+  const ProductPage({Key? key,  required int this.category_id, required this.category_name,}) : super(key: key);
+
+  final int? category_id;
+  final String? category_name;
 
   @override
-  State<ProductPage> createState() => _ProductPageState();
+  State<ProductPage> createState() => _ProductPageState(category_id, category_name);
 }
 
 class _ProductPageState extends State<ProductPage> {
   List<ProductData> products = [];
   final lang = 3;
-  var category_id = -1;
+
+  _ProductPageState(int? category_id, String? category_name);
 
   void getCategories(String lang) async {
     Map<String, String> header = {"autorization": "a69fa0e1dd3d5c2c77cb4d3f0adde901"};
-    final categoryResponse = await ChuckerHttpClient(http.Client()).get(headers: header, Uri.parse("${AllCons.BASE_URL}${category_id}/products?lang=$lang"));
+    final categoryResponse = await ChuckerHttpClient(http.Client()).get(headers: header, Uri.parse("${AllCons.BASE_URL}${this.category_id}/products?lang=$lang"));
     final Map<String, dynamic> body = jsonDecode(categoryResponse.body);
     final ProductResponse product = ProductResponse.fromJson(body);
     setState(() {
