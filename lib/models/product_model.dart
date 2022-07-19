@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class ProductResponse {
   int? status;
   List<ProductData>? data;
@@ -24,13 +26,15 @@ class ProductResponse {
   }
 }
 
-class ProductData {
+class ProductData extends JsonEncoder{
   String? productName;
   String? productDescription;
   String? productPrice;
   String? productModel;
   String? productImage;
   int? productId;
+  int? categoryId = -1;
+  int? productCount = 0;
 
   ProductData(
       {this.productName,
@@ -38,7 +42,9 @@ class ProductData {
         this.productPrice,
         this.productModel,
         this.productImage,
-        this.productId});
+        this.productId,
+        this.categoryId,
+      });
 
   ProductData.fromJson(Map<String, dynamic> json) {
     productName = json['product_name'];
@@ -47,6 +53,7 @@ class ProductData {
     productModel = json['product_model'];
     productImage = json['product_image'];
     productId = json['product_id'];
+    categoryId = json['category_id'];
   }
 
   Map<String, dynamic> toJson() {
@@ -57,6 +64,7 @@ class ProductData {
     data['product_model'] = this.productModel;
     data['product_image'] = this.productImage;
     data['product_id'] = this.productId;
+    data['category_id'] = this.categoryId;
     return data;
   }
 }

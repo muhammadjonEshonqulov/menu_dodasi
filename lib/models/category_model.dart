@@ -26,6 +26,8 @@ class CategoryData {
   int? categoryId;
   String? categoryName;
   String? categoryPhoto;
+  int? categoryCount = 0;
+
 
   CategoryData({this.categoryId, this.categoryName, this.categoryPhoto});
 
