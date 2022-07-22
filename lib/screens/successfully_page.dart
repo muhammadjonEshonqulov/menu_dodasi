@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:menu_dodasi/cons/colors/ColorConstants.dart';
+import 'package:menu_dodasi/screens/category_page.dart';
 
 class SucceessfullyPage extends StatefulWidget {
   static const routeName = '/successfully-page';
@@ -74,7 +75,9 @@ class _SucceessfullyPageState extends State<SucceessfullyPage> {
                       borderRadius: BorderRadius.circular(10),
                       color: ColorConstants.colorPrimary,
                       child: InkWell(
-                        onTap: () => {},
+                        onTap: () => {
+                          Navigator.popUntil(context, ModalRoute.withName(CategoryPage.routeName))
+                        },
                         child: Container(
                           padding: EdgeInsets.all(15),
 

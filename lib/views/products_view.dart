@@ -1,122 +1,56 @@
-import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:chucker_flutter/chucker_flutter.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+import 'package:menu_dodasi/models/product_model.dart';
 import 'package:menu_dodasi/screens/basket_page.dart';
 import 'package:menu_dodasi/screens/category_page.dart';
 import 'package:menu_dodasi/screens/more_page.dart';
-import 'package:menu_dodasi/views/products_view.dart';
+import 'package:menu_dodasi/views/all_product_count_listener.dart';
 
 import '../cons/all_cons.dart';
 import '../cons/colors/ColorConstants.dart';
-import '../models/AllOrderBody.dart';
-import '../models/product_model.dart';
 
-class ProductPage extends StatefulWidget {
-  static const routeName = '/product-page';
-
-  const ProductPage({
+class ProductsView<T> extends StatefulWidget {
+  ProductsView(
+    this.products,
+    this.lang,
+    this.action,
+    this.sendCount, {
     Key? key,
   }) : super(key: key);
 
+  List<ProductData> products;
+  int lang;
+  Future<T> Function(Map argument) action;
+  Future<T> Function(ProductData productData) sendCount;
+
+
   @override
-  State<ProductPage> createState() => _ProductPageState();
+  State<ProductsView> createState() => _ProductsViewState(products, lang, action, sendCount);
 }
 
-class _ProductPageState<T> extends State<ProductPage> {
-  List<ProductData> products = [];
-  Future<T> Function(Map argument)? action;
+void navigateToMore(argument, context) {
+  Navigator.pushNamed(context, MorePage.routeName, arguments: argument);
+}
 
-  final _chuckerHttpClient = ChuckerHttpClient(http.Client());
+class _ProductsViewState<T> extends State<ProductsView> {
+  _ProductsViewState(this.products, this.lang, this.action, this.sendCount);
 
-  Future<List<ProductData>?> _getCategories(int category_id, int lang) async {
-    Map<String, String> header = {"autorization": AllCons.TOKEN};
-    var categoryResponse = await _chuckerHttpClient.get(headers: header, Uri.parse("${AllCons.BASE_URL}${category_id}/products?lang=$lang"));
-    Map<String, dynamic> body = jsonDecode(categoryResponse.body);
-    ProductResponse category = ProductResponse.fromJson(body);
+  int lang;
+  List<ProductData> products;
+  Future<T> Function(Map argument) action;
+  Future<T> Function(ProductData productData) sendCount;
 
-
-    if (kDebugMode) {
-      print("category->${category.data}");
-    }
-    if (category.data != null) {
-      products = category.data!;
-      for (var value in products) {
-        value.categoryId = category_id;
-        value.productId = 'category_id=$category_id&&product_id=${value.productId}';
-      }
-      return products;
-    } else {
-      return <ProductData>[];
-    }
-  }
-
-  navigateToMore(argument) {
-    Navigator.pushNamed(context, MorePage.routeName, arguments: argument);
-  }
-
-  AllOrderBody? allOrderBody;
   @override
   Widget build(BuildContext context) {
-    final arg = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-
-    final lang = arg['lang'];
-    final category_id = arg['category_id'];
-    final String category_name = arg['category_name'];
-
-    if(allOrderBody == null){
-      Map<String, ProductData> allOrders = {};
-      allOrderBody = AllOrderBody(allOrders);
-    }
-
-    // allOrderBody = arg['AllOrderBody'];
-
-    return SafeArea(
-        child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      navigatorObservers: [ChuckerFlutter.navigatorObserver],
-      home: Scaffold(
-          backgroundColor: Colors.white,
-          body: Container(
-            height: double.infinity,
-            decoration: BoxDecoration(image: DecorationImage(fit: BoxFit.fill, image: AssetImage('images/background_menu_dodasi.png'))),
-            child: Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(transform: GradientRotation(1.6), colors: [
-                  Color.fromRGBO(255, 255, 255, 0.4),
-                  Color.fromRGBO(255, 255, 255, 0.9),
-                  Color.fromRGBO(255, 255, 255, 0.8),
-                ]),
-              ),
-              child: Column(
-                children: [
-                  Expanded(flex: 2, child: appBar(category_name, lang, category_id)),
-                  Expanded(
-                    flex: 9,
-                    child: FutureBuilder(
-                      future: _getCategories(category_id ?? 0, lang ?? 0),
-                      builder: (BuildContext context, AsyncSnapshot snapshot) {
-                        if (snapshot.data == null) {
-                          return const Center(child: Text('Loading ...'));
-                        } else {
-                          for (var element in products) {
-                            element.productCount = 0;
-                          }
-
-                          return ProductsView(products, lang, (argument) => navigateToMore(argument), (productData) => sendCount(productData));
-                        }
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          )),
-    ));
+    return MasonryGridView.count(
+      crossAxisCount: 2,
+      itemCount: products.length,
+      itemBuilder: (BuildContext context, int index) {
+        return productItem(products[index], lang);
+      },
+    );
   }
 
   Widget productItem(ProductData productData, lang) {
@@ -145,7 +79,7 @@ class _ProductPageState<T> extends State<ProductPage> {
                                       onTap: () {
                                         Navigator.pop(context);
                                       },
-                                      child: const Padding(
+                                      child: Padding(
                                         padding: EdgeInsets.only(left: 12, top: 8, bottom: 8, right: 12),
                                         child: Text(
                                           'X',
@@ -156,12 +90,12 @@ class _ProductPageState<T> extends State<ProductPage> {
                               ),
                             ],
                           ),
-                          const Center(
+                          Center(
                               child: Text(
                             'Выберете кол-во',
                             style: TextStyle(fontFamily: 'Arsenal', fontWeight: FontWeight.bold),
                           )),
-                          const SizedBox(
+                          SizedBox(
                             height: 50,
                           ),
                           Row(
@@ -235,7 +169,7 @@ class _ProductPageState<T> extends State<ProductPage> {
                                 ),
                               ),
                               Container(
-                                margin: EdgeInsets.only(top: 20, left: 35, right: 35),
+                                margin: const EdgeInsets.only(top: 20, left: 35, right: 35),
                                 child: Material(
                                   color: ColorConstants.colorPrimary,
                                   borderRadius: BorderRadius.circular(5),
@@ -243,14 +177,12 @@ class _ProductPageState<T> extends State<ProductPage> {
                                     onTap: () {
                                       Navigator.pop(context);
                                       Map<String, dynamic> argument = {'category_id': productData.categoryId, 'lang': lang};
-                                      navigateToMore(argument);
-                                      // Navigator.pushNamed(context, BasketPage.routeName, arguments: argument);
-                                      prt('context 1->$context');
+                                      Navigator.pushNamed(context, BasketPage.routeName, arguments: argument);
                                     },
                                     child: Container(
                                         alignment: Alignment.center,
                                         padding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: 10),
-                                        child: Text(
+                                        child: const Text(
                                           'В корзину',
                                           style: TextStyle(fontFamily: 'Arsenal', color: Colors.white),
                                         )),
@@ -274,7 +206,7 @@ class _ProductPageState<T> extends State<ProductPage> {
     return Material(
       child: InkWell(
         onTap: () {
-          navigateToMore("argument");
+          navigateToMore("argument", context);
         },
         child: Card(
           elevation: 10,
@@ -332,12 +264,10 @@ class _ProductPageState<T> extends State<ProductPage> {
                     borderRadius: BorderRadius.circular(5),
                     child: InkWell(
                       onTap: () {
-                        Map<String, dynamic> argument = <String, dynamic>{};
-                        argument = productData.toJson();
-                        // argument['lang'] = lang;
-                        prt("lang-->$lang");
+                        Map<String, dynamic> argument = productData.toJson();
                         argument.putIfAbsent('lang', () => lang);
-                        navigateToMore(argument);
+                        action(argument);
+                        prt('print');
                       },
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
@@ -363,9 +293,12 @@ class _ProductPageState<T> extends State<ProductPage> {
                       color: ColorConstants.colorPrimary,
                       borderRadius: BorderRadius.circular(5),
                       child: InkWell(
-                        onTap: () => dialog(lang).then((value) => setState(() {
-                              _count;
-                            })),
+                        onTap: () => dialog(lang).then((value) {
+                          setState(() {
+                            _count;
+                          });
+                          sendCount(productData);
+                        }),
                         child: Container(
                           padding: EdgeInsets.only(left: 13, right: 13, top: 8, bottom: 8),
                           child: Text(
@@ -391,128 +324,5 @@ class _ProductPageState<T> extends State<ProductPage> {
         ),
       ),
     );
-  }
-
-  Widget appBar(String category_name, lang, category_id) {
-    return SizedBox(
-        height: 162,
-        child: Container(
-          padding: EdgeInsets.only(top: 10, bottom: 3),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(10),
-                      color: ColorConstants.colorPrimary,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0, right: 3),
-                              child: Image.asset(width: 25, color: Colors.white, 'images/left_forward.png'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Text(
-                                'Назад',
-                                style: TextStyle(fontFamily: 'Arsenal', color: Colors.white),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  IconButton(onPressed: () {}, icon: Icon(size: 30, color: ColorConstants.colorPrimaryAccent, Icons.search)),
-                  Container(margin: EdgeInsets.only(right: 0), child: Center(child: Image(height: MediaQuery.of(context).size.width * 0.2, image: AssetImage('images/logo_menu_dodasi.png')))),
-                  Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5.0),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(10),
-                      color: ColorConstants.colorPrimary,
-                      child: InkWell(
-                        onTap: () {
-                          Map<String, dynamic> argument = {'lang': lang, 'category_id': category_id};
-                          argument.putIfAbsent('AllOrderBody', () => allOrderBody);
-                          Navigator.pushNamed(context, BasketPage.routeName, arguments: argument);
-                        },
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0, right: 3),
-                              child: Image.asset(width: 25, color: Colors.white, 'images/korzinka.png'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Text(
-                                '',
-                                style: TextStyle(fontFamily: 'Arsenal', color: Colors.white),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        color: ColorConstants.colorPrimary,
-                        height: 1,
-                      ),
-                    ),
-                    Center(
-                      child: Container(
-                          padding: EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
-                          decoration: BoxDecoration(border: Border.all(color: ColorConstants.colorPrimary, width: 1), borderRadius: BorderRadius.circular(5)),
-                          child: Text(
-                            "   $category_name   ",
-                            style: TextStyle(fontFamily: 'Arsenal', color: ColorConstants.colorPrimaryAccent, fontWeight: FontWeight.bold),
-                          )),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        color: ColorConstants.colorPrimary,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ));
-  }
-
-  sendCount(ProductData productData) {
-    if(productData.productCount! > 0){
-      allOrderBody?.allOrders[productData.productId??''] =  productData;
-    } else if(productData.productCount! == 0){
-      allOrderBody?.allOrders.remove(productData.productId);
-    }
-
-
-    allOrderBody?.allOrders.forEach((key, value) {
-      prt('value->${allOrderBody?.allOrders.length} / $key/  ${value.toJson()}');
-    });
   }
 }

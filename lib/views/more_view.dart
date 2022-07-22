@@ -1,80 +1,50 @@
-import 'dart:convert';
-
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:menu_dodasi/cons/all_cons.dart';
 import 'package:menu_dodasi/models/product_model.dart';
-import 'package:menu_dodasi/screens/basket_page.dart';
-import 'package:menu_dodasi/views/more_view.dart';
 
-import '../cons/CustomAppBar.dart';
+import '../cons/all_cons.dart';
 import '../cons/colors/ColorConstants.dart';
-import 'category_page.dart';
+import '../screens/basket_page.dart';
+import '../screens/category_page.dart';
 
-class MorePage extends StatefulWidget {
-  static const routeName = '/more-page';
+class MoreView extends StatefulWidget {
+  MoreView(this.productData, this.lang, {Key? key}) : super(key: key);
 
-  const MorePage({Key? key}) : super(key: key);
+  ProductData productData;
+  int lang;
 
   @override
-  State<MorePage> createState() => _MorePageState();
+  State<MoreView> createState() => _MoreViewState(productData, lang);
 }
 
-class _MorePageState extends State<MorePage> {
-
+class _MoreViewState extends State<MoreView> {
+  ProductData productData;
+  int lang;
   int _count = 0;
 
   void _counter(value) {
-    prt('_count->$_count');
-    prt('value->$value');
     setState(() {
       if (value == 1) {
         _count++;
       } else if (value == 0) {
         if (_count > 0) _count--;
       }
-      prt('_count 2 ->$_count');
     });
+  }
+
+  _MoreViewState(this.productData, this.lang);
+
+  @override
+  void initState() {
+    _count = productData.productCount ?? 0;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-
-    final arg = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>;
-
-    final ProductData productData = ProductData.fromJson(arg);
-    _count = productData.productCount??1;
-    int lang = arg['lang']??0;
-
-    return SafeArea(
-        child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: Scaffold(
-          body: Container(
-        decoration: BoxDecoration(image: DecorationImage(fit: BoxFit.fill, image: AssetImage('images/background_menu_dodasi.png'))),
-        child: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(transform: GradientRotation(1.6), colors: [
-              Color.fromRGBO(255, 255, 255, 0.4),
-              Color.fromRGBO(255, 255, 255, 0.9),
-              Color.fromRGBO(255, 255, 255, 0.8),
-            ]),
-          ),
-          child: Column(
-            children: [
-              appBar('${productData.productName} ',lang, productData.categoryId),
-             MoreView(productData, lang),
-            ],
-          ),
-        ),
-      )),
-    ));
-  }
-
-  Widget more(productData,lang) {
     return Column(
       children: [
-        appBar('${productData.productName} ',lang, productData.categoryId),
         Container(
           padding: EdgeInsets.all(10),
           child: Card(
@@ -97,14 +67,14 @@ class _MorePageState extends State<MorePage> {
                         placeholder: (context, url) => productData.productImage == null
                             ? Image(image: AssetImage('images/logo_menu_dodasi.png'))
                             : Center(
-                            child: SizedBox(
-                                width: 40,
-                                height: 40,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  backgroundColor: Colors.white,
-                                  color: ColorConstants.colorPrimary,
-                                ))),
+                                child: SizedBox(
+                                    width: 40,
+                                    height: 40,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      backgroundColor: Colors.white,
+                                      color: ColorConstants.colorPrimary,
+                                    ))),
                       ),
                     ),
                   ),
@@ -148,7 +118,7 @@ class _MorePageState extends State<MorePage> {
                           color: ColorConstants.colorPrimary,
                           borderRadius: BorderRadius.circular(5),
                           child: InkWell(
-                            onTap: () =>  _counter(0),
+                            onTap: () => _counter(0),
                             child: Container(
                               padding: EdgeInsets.only(left: 13, right: 13, top: 8, bottom: 8),
                               child: Text(
@@ -168,9 +138,7 @@ class _MorePageState extends State<MorePage> {
                           color: ColorConstants.colorPrimary,
                           borderRadius: BorderRadius.circular(5),
                           child: InkWell(
-                            onTap: () => {
-                              _counter(1)
-                            },
+                            onTap: () => {_counter(1)},
                             child: Container(
                               padding: EdgeInsets.only(left: 13, right: 13, top: 8, bottom: 8),
                               child: Text(
@@ -193,9 +161,9 @@ class _MorePageState extends State<MorePage> {
                         padding: EdgeInsets.all(12),
                         child: Center(
                             child: Text(
-                              'Выбрать',
-                              style: TextStyle(color: Colors.white, fontFamily: 'Arsenal'),
-                            )),
+                          'Выбрать',
+                          style: TextStyle(color: Colors.white, fontFamily: 'Arsenal'),
+                        )),
                       ),
                     ),
                   )
@@ -207,7 +175,6 @@ class _MorePageState extends State<MorePage> {
       ],
     );
   }
-  // int _count = 1;
 
   Future dialog(int? categoryId, lang) => showDialog(
         context: context,
@@ -302,111 +269,4 @@ class _MorePageState extends State<MorePage> {
                   ),
                 )),
       );
-
-  Widget appBar(String categoryName, lang,  categoryId) {
-    return SizedBox(
-        height: 162,
-        child: Container(
-          padding: EdgeInsets.only(top: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(left: 5.0),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(10),
-                      color: ColorConstants.colorPrimary,
-                      child: InkWell(
-                        onTap: () {
-                          Navigator.pop(context);
-                        },
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0, right: 3),
-                              child: Image.asset(width: 25, color: Colors.white, 'images/left_forward.png'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Text(
-                                'Назад',
-                                style: TextStyle(fontFamily: 'Arsenal', color: Colors.white),
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  Spacer(),
-                  Container(margin: EdgeInsets.only(right: 40), child: Center(child: Image(height: MediaQuery.of(context).size.width*0.2, image: AssetImage('images/logo_menu_dodasi.png')))),
-                  Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.only(right: 5.0),
-                    child: Material(
-                      borderRadius: BorderRadius.circular(10),
-                      color: ColorConstants.colorPrimary,
-                      child: InkWell(
-                        onTap: () {
-                          Map<String, dynamic>  argument = {
-                            'lang':lang, 'category_id':categoryId
-                          };
-                          Navigator.pushNamed(context, BasketPage.routeName, arguments: argument);                        },
-                        child: Row(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 8.0, top: 8.0, bottom: 8.0, right: 3),
-                              child: Image.asset(width: 25, color: Colors.white, 'images/korzinka.png'),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: Text('', style: TextStyle(fontFamily: 'Arsenal', color: Colors.white),),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Container(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        color: ColorConstants.colorPrimary,
-                        height: 1,
-                      ),
-                    ),
-                    Center(
-                      child: Container(
-                          padding: EdgeInsets.only(left: 15, right: 15, top: 5, bottom: 5),
-                          decoration: BoxDecoration(border: Border.all(color: ColorConstants.colorPrimary, width: 1), borderRadius: BorderRadius.circular(5)),
-                          child: Text(
-                            "   $categoryName   ",
-                            style: TextStyle(fontFamily: 'Arsenal', color: ColorConstants.colorPrimaryAccent, fontWeight: FontWeight.bold),
-                          )),
-                    ),
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        color: ColorConstants.colorPrimary,
-                        height: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ));
-  }
 }

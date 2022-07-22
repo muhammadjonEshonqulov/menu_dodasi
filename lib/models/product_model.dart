@@ -32,7 +32,7 @@ class ProductData extends JsonEncoder{
   String? productPrice;
   String? productModel;
   String? productImage;
-  int? productId;
+  dynamic productId;
   int? categoryId = -1;
   int? productCount = 0;
 
@@ -44,6 +44,7 @@ class ProductData extends JsonEncoder{
         this.productImage,
         this.productId,
         this.categoryId,
+        this.productCount,
       });
 
   ProductData.fromJson(Map<String, dynamic> json) {
@@ -54,17 +55,19 @@ class ProductData extends JsonEncoder{
     productImage = json['product_image'];
     productId = json['product_id'];
     categoryId = json['category_id'];
+    productCount = json['product_count']??productCount;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['product_name'] = this.productName;
-    data['product_description'] = this.productDescription;
-    data['product_price'] = this.productPrice;
-    data['product_model'] = this.productModel;
-    data['product_image'] = this.productImage;
-    data['product_id'] = this.productId;
-    data['category_id'] = this.categoryId;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['product_name'] = productName;
+    data['product_description'] = productDescription;
+    data['product_price'] = productPrice;
+    data['product_model'] = productModel;
+    data['product_image'] = productImage;
+    data['product_id'] = productId;
+    data['category_id'] = categoryId;
+    data['product_count'] = productCount;
     return data;
   }
 }

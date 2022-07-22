@@ -11,3 +11,21 @@ void prt(String message) {
     print('MenuDodasi-> $message');
   }
 }
+
+void snackAction(context,message) {
+  final SnackBar snackBar = SnackBar(
+    content: Text(message),
+    action: SnackBarAction(
+      label: 'Закрыть',
+      onPressed: () {
+        // Some code to undo the change.
+      },
+    ),
+  );
+  ScaffoldMessenger.of(context).showSnackBar(snackBar);
+}
+
+void snack(context,message) {
+
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+}

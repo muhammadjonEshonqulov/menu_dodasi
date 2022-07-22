@@ -27,12 +27,12 @@ class MyApp extends StatelessWidget {
       ),
       initialRoute: LoginPage.routeName,
       routes: {
-        LoginPage.routeName: (ctx) => LoginPage(),
-        CategoryPage.routeName: (ctx) => CategoryPage(),
-        ProductPage.routeName: (ctx) => ProductPage(),
-        MorePage.routeName: (ctx) => MorePage(),
-        BasketPage.routeName: (ctx) => BasketPage(),
-        SucceessfullyPage.routeName: (ctx) => SucceessfullyPage(),
+        LoginPage.routeName: (ctx) => const LoginPage(),
+        CategoryPage.routeName: (ctx) => const CategoryPage(),
+        ProductPage.routeName: (ctx) => const ProductPage(),
+        MorePage.routeName: (ctx) => const MorePage(),
+        BasketPage.routeName: (ctx) => const BasketPage(),
+        SucceessfullyPage.routeName: (ctx) => const SucceessfullyPage(),
       },
     );
   }

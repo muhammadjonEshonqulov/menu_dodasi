@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:http/http.dart' as http;
 import 'package:menu_dodasi/cons/all_cons.dart';
+import 'package:menu_dodasi/screens/basket_page.dart';
 import 'package:menu_dodasi/screens/product_page.dart';
 
-import '../cons/CustomAppBar.dart';
 import '../cons/colors/ColorConstants.dart';
+import '../models/AllOrderBody.dart';
 import '../models/category_model.dart';
 
 class CategoryPage extends StatefulWidget {
@@ -24,6 +25,8 @@ class CategoryPage extends StatefulWidget {
 
 class _CategoryPageState extends State<CategoryPage> {
   List<CategoryData> categories = [];
+  AllOrderBody? allOrderBody;
+
 
   final _chuckerHttpClient = ChuckerHttpClient(http.Client());
 
@@ -32,6 +35,7 @@ class _CategoryPageState extends State<CategoryPage> {
     var categoryResponse = await _chuckerHttpClient.get(headers: header, Uri.parse("${AllCons.BASE_URL}category?lang=$lang"));
     Map<String, dynamic> body = jsonDecode(categoryResponse.body);
     CategoryResponse category = CategoryResponse.fromJson(body);
+
 
     if (kDebugMode) {
       print("category->${category.data}");
@@ -47,14 +51,21 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     final arg = ModalRoute.of(context)?.settings.arguments as Map<String, int>;
+    // allOrderBody ??= AllOrderBody();
     final lang = arg['lang'];
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       // navigatorObservers: [ChuckerFlutter.navigatorObserver],
       home: SafeArea(
           child: Scaffold(
-              appBar: appBar(),
               body: Container(
+        decoration: BoxDecoration(image: DecorationImage(fit: BoxFit.fill, image: AssetImage('images/background_menu_dodasi.png'))),
+        child: Column(
+          children: [
+            Expanded(flex: 2, child: appBar(lang)),
+            Expanded(
+              flex: 8,
+              child: Container(
                 padding: const EdgeInsets.all(10),
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(transform: GradientRotation(1.6), colors: [
@@ -83,7 +94,11 @@ class _CategoryPageState extends State<CategoryPage> {
                     }
                   },
                 ),
-              ))),
+              ),
+            ),
+          ],
+        ),
+      ))),
     );
   }
 
@@ -91,6 +106,7 @@ class _CategoryPageState extends State<CategoryPage> {
     return InkWell(
       onTap: () {
         Map<String, dynamic> argument = {'category_id': categoryData.categoryId ?? 0, 'category_name': categoryData.categoryName, 'lang': lang ?? 0};
+        argument.putIfAbsent('AllOrderBody', () => allOrderBody);
         Navigator.pushNamed(context, ProductPage.routeName, arguments: argument);
       },
       child: Card(
@@ -105,7 +121,17 @@ class _CategoryPageState extends State<CategoryPage> {
                   height: 200,
                   imageUrl: categoryData.categoryPhoto.toString(),
                   errorWidget: (context, url, error) => Image(image: AssetImage('images/logo_menu_dodasi.png')),
-                  placeholder: (context, url) => categoryData.categoryPhoto == null ? Image(image: AssetImage('images/logo_menu_dodasi.png')) : Center(child: SizedBox(width: 40,height: 40, child: CircularProgressIndicator(strokeWidth: 2,backgroundColor: Colors.white,color: ColorConstants.colorPrimary,))),
+                  placeholder: (context, url) => categoryData.categoryPhoto == null
+                      ? Image(image: AssetImage('images/logo_menu_dodasi.png'))
+                      : Center(
+                          child: SizedBox(
+                              width: 40,
+                              height: 40,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                backgroundColor: Colors.white,
+                                color: ColorConstants.colorPrimary,
+                              ))),
                 ),
               ),
               Container(
@@ -130,20 +156,30 @@ class _CategoryPageState extends State<CategoryPage> {
     );
   }
 
-  CustomAppBar appBar() {
-    return CustomAppBar(
-        height: 152,
+  Widget appBar(lang) {
+    return SizedBox(
+        height: 162,
         child: Container(
-          color: Color.fromRGBO(255, 255, 255, 1),
+          padding: EdgeInsets.only(top: 10, bottom: 3),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  IconButton(padding: EdgeInsets.only(left: 10), onPressed: () {}, icon: Icon(size: 30, color: Colors.white, Icons.search)),
-                  Image(height: 100, image: AssetImage('images/logo_menu_dodasi.png')),
-                  IconButton(padding: EdgeInsets.only(right: 10), onPressed: () {}, icon: Image.asset(height: 30, 'images/korzinka.png')),
+                  IconButton(padding: EdgeInsets.only(left: 50), onPressed: () {}, icon: Icon(size: 30, color: ColorConstants.colorPrimaryAccent, Icons.search)),
+                  Spacer(),
+                  Container(margin: EdgeInsets.only(right: 10), child: Center(child: Image(height: 100, image: AssetImage('images/logo_menu_dodasi.png')))),
+                  Spacer(),
+                  Container(
+                      child: IconButton(
+                          padding: EdgeInsets.only(right: 15),
+                          onPressed: () {
+                            Map<String, dynamic> argument = {'lang': lang, 'category_id': categories[0].categoryId};
+                            Navigator.pushNamed(context, BasketPage.routeName, arguments: argument);
+                          },
+                          color: ColorConstants.colorPrimaryAccent,
+                          icon: Image.asset(height: 30, 'images/korzinka.png'))),
                 ],
               ),
               SizedBox(
